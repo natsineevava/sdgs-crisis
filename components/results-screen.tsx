@@ -20,6 +20,41 @@ const suggestedPodcasts = [
   { id: '3', nameThai: 'ธรรมะก่อนนอน', teacher: 'ท่าน ว.วชิรเมธี', image: '/images/dhamma-3.jpg' },
 ]
 
+// Growth stages based on focus minutes
+const getGrowthStage = (minutes: number) => {
+  if (minutes < 5) {
+    return {
+      stage: 1,
+      message: 'วันนี้คุณได้หว่านเมล็ดพันธุ์แห่งสติ',
+      subMessage: 'เมล็ดพันธุ์เล็กๆ กำลังรอการเติบโต',
+    }
+  } else if (minutes < 15) {
+    return {
+      stage: 2,
+      message: 'วันนี้คุณได้รดน้ำพรวนดิน',
+      subMessage: 'เมล็ดพันธุ์เริ่มงอกงาม',
+    }
+  } else if (minutes < 30) {
+    return {
+      stage: 3,
+      message: 'ต้นโพกำลังเติบโต',
+      subMessage: 'ใบอ่อนเริ่มผลิบาน',
+    }
+  } else if (minutes < 60) {
+    return {
+      stage: 4,
+      message: 'ต้นโพเติบโตแข็งแรง',
+      subMessage: 'กิ่งก้านแผ่ขยาย',
+    }
+  } else {
+    return {
+      stage: 5,
+      message: 'ต้นโพเติบโตสมบูรณ์',
+      subMessage: 'ร่มเงาแห่งปัญญาแผ่กว้าง',
+    }
+  }
+}
+
 interface ResultsScreenProps {
   result: CheckInResult
   focusMinutes: number
@@ -32,115 +67,174 @@ export function ResultsScreen({
   onHome,
   onPodcast,
 }: ResultsScreenProps) {
-  // Get random quote based on date
   const todayIndex = new Date().getDate() % quotes.length
   const todayQuote = quotes[todayIndex]
   const suggestedPodcast = suggestedPodcasts[todayIndex % suggestedPodcasts.length]
+  const growth = getGrowthStage(focusMinutes)
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
       {/* Header */}
       <div className="flex items-center justify-center px-5 py-4">
-        <span className="text-xl font-bold text-gray-900">สรุปผล</span>
+        <span className="text-xl font-bold text-gray-900">การโตของต้นโพ</span>
       </div>
 
       {/* Content */}
       <div className="flex flex-1 flex-col items-center px-6 pb-6">
-        {/* Focus Time Message */}
-        <div className="mb-4 text-center w-full">
-          <p className="text-lg text-gray-900">
-            วันนี้คุณได้มีสติ
+        {/* Growth Message */}
+        <div className="mb-3 text-center w-full">
+          <p className="text-lg font-semibold text-amber-700">
+            {growth.message}
           </p>
-          <p className="text-lg text-gray-900">
-            เป็นเวลา <span className="font-bold text-amber-600">{focusMinutes} นาที</span>
+          <p className="text-sm text-gray-600">
+            {growth.subMessage}
           </p>
         </div>
 
-        {/* Golden Bodhi Tree */}
+        {/* Animated Golden Bodhi Tree */}
         <div className="mb-4 flex items-center justify-center">
-          <svg viewBox="0 0 200 200" className="h-44 w-44">
-            {/* Trunk */}
+          <svg viewBox="0 0 200 220" className="h-48 w-48">
             <defs>
-              <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient id="trunkGold" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#B8860B" />
                 <stop offset="50%" stopColor="#FFD700" />
                 <stop offset="100%" stopColor="#B8860B" />
               </linearGradient>
-              <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id="leafGold" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#FFD700" />
+                <stop offset="50%" stopColor="#FFC125" />
                 <stop offset="100%" stopColor="#DAA520" />
+              </linearGradient>
+              <linearGradient id="leafGoldDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#DAA520" />
+                <stop offset="100%" stopColor="#B8860B" />
               </linearGradient>
             </defs>
             
             {/* Main trunk */}
-            <path d="M95 200 L95 130 Q100 120 100 110 Q100 120 105 130 L105 200" fill="url(#trunkGradient)" />
+            <path d="M94 220 L94 140 Q100 125 100 115 Q100 125 106 140 L106 220" fill="url(#trunkGold)" />
+            <path d="M97 220 L97 145 Q100 135 100 125 Q100 135 103 145 L103 220" fill="#FFD700" opacity="0.5" />
             
-            {/* Branch structure - symmetrical spreading branches */}
-            {/* Center branch */}
-            <path d="M100 110 L100 50" stroke="url(#trunkGradient)" strokeWidth="3" fill="none" />
-            
-            {/* Level 1 branches */}
-            <path d="M100 100 Q85 95 70 85" stroke="url(#trunkGradient)" strokeWidth="2.5" fill="none" />
-            <path d="M100 100 Q115 95 130 85" stroke="url(#trunkGradient)" strokeWidth="2.5" fill="none" />
-            
-            {/* Level 2 branches */}
-            <path d="M100 85 Q80 80 55 70" stroke="url(#trunkGradient)" strokeWidth="2" fill="none" />
-            <path d="M100 85 Q120 80 145 70" stroke="url(#trunkGradient)" strokeWidth="2" fill="none" />
-            
-            {/* Level 3 branches */}
-            <path d="M100 70 Q75 65 45 58" stroke="url(#trunkGradient)" strokeWidth="1.5" fill="none" />
-            <path d="M100 70 Q125 65 155 58" stroke="url(#trunkGradient)" strokeWidth="1.5" fill="none" />
-            
-            {/* Level 4 branches - widest */}
-            <path d="M100 60 Q70 55 35 55" stroke="url(#trunkGradient)" strokeWidth="1.5" fill="none" />
-            <path d="M100 60 Q130 55 165 55" stroke="url(#trunkGradient)" strokeWidth="1.5" fill="none" />
-            
-            {/* Heart-shaped Bodhi leaves - spread around the tree */}
-            {/* Top leaves */}
-            <path d="M100 35 C100 30 95 25 100 20 C105 25 100 30 100 35" fill="url(#leafGradient)" />
-            <path d="M92 40 C92 35 87 30 92 25 C97 30 92 35 92 40" fill="url(#leafGradient)" />
-            <path d="M108 40 C108 35 103 30 108 25 C113 30 108 35 108 40" fill="url(#leafGradient)" />
-            
-            {/* Second row */}
-            <path d="M80 50 C80 45 75 40 80 35 C85 40 80 45 80 50" fill="url(#leafGradient)" />
-            <path d="M120 50 C120 45 115 40 120 35 C125 40 120 45 120 50" fill="url(#leafGradient)" />
-            <path d="M100 55 C100 50 95 45 100 40 C105 45 100 50 100 55" fill="url(#leafGradient)" />
-            
-            {/* Third row - wider */}
-            <path d="M65 60 C65 55 60 50 65 45 C70 50 65 55 65 60" fill="url(#leafGradient)" />
-            <path d="M135 60 C135 55 130 50 135 45 C140 50 135 55 135 60" fill="url(#leafGradient)" />
-            <path d="M85 58 C85 53 80 48 85 43 C90 48 85 53 85 58" fill="url(#leafGradient)" />
-            <path d="M115 58 C115 53 110 48 115 43 C120 48 115 53 115 58" fill="url(#leafGradient)" />
-            
-            {/* Fourth row - widest spread */}
-            <path d="M50 65 C50 60 45 55 50 50 C55 55 50 60 50 65" fill="url(#leafGradient)" />
-            <path d="M150 65 C150 60 145 55 150 50 C155 55 150 60 150 65" fill="url(#leafGradient)" />
-            <path d="M70 68 C70 63 65 58 70 53 C75 58 70 63 70 68" fill="url(#leafGradient)" />
-            <path d="M130 68 C130 63 125 58 130 53 C135 58 130 63 130 68" fill="url(#leafGradient)" />
-            <path d="M100 70 C100 65 95 60 100 55 C105 60 100 65 100 70" fill="url(#leafGradient)" />
-            
-            {/* Fifth row */}
-            <path d="M40 75 C40 70 35 65 40 60 C45 65 40 70 40 75" fill="url(#leafGradient)" />
-            <path d="M160 75 C160 70 155 65 160 60 C165 65 160 70 160 75" fill="url(#leafGradient)" />
-            <path d="M55 78 C55 73 50 68 55 63 C60 68 55 73 55 78" fill="url(#leafGradient)" />
-            <path d="M145 78 C145 73 140 68 145 63 C150 68 145 73 145 78" fill="url(#leafGradient)" />
-            <path d="M80 80 C80 75 75 70 80 65 C85 70 80 75 80 80" fill="url(#leafGradient)" />
-            <path d="M120 80 C120 75 115 70 120 65 C125 70 120 75 120 80" fill="url(#leafGradient)" />
-            
-            {/* Sixth row - lower spreading */}
-            <path d="M35 88 C35 83 30 78 35 73 C40 78 35 83 35 88" fill="url(#leafGradient)" />
-            <path d="M165 88 C165 83 160 78 165 73 C170 78 165 83 165 88" fill="url(#leafGradient)" />
-            <path d="M60 90 C60 85 55 80 60 75 C65 80 60 85 60 90" fill="url(#leafGradient)" />
-            <path d="M140 90 C140 85 135 80 140 75 C145 80 140 85 140 90" fill="url(#leafGradient)" />
-            <path d="M90 92 C90 87 85 82 90 77 C95 82 90 87 90 92" fill="url(#leafGradient)" />
-            <path d="M110 92 C110 87 105 82 110 77 C115 82 110 87 110 92" fill="url(#leafGradient)" />
-            
-            {/* Bottom row leaves */}
-            <path d="M45 100 C45 95 40 90 45 85 C50 90 45 95 45 100" fill="url(#leafGradient)" />
-            <path d="M155 100 C155 95 150 90 155 85 C160 90 155 95 155 100" fill="url(#leafGradient)" />
-            <path d="M75 102 C75 97 70 92 75 87 C80 92 75 97 75 102" fill="url(#leafGradient)" />
-            <path d="M125 102 C125 97 120 92 125 87 C130 92 125 97 125 102" fill="url(#leafGradient)" />
+            {/* Animated tree group - gentle sway */}
+            <g className="animate-[sway_4s_ease-in-out_infinite]" style={{ transformOrigin: '100px 140px' }}>
+              {/* Branch structure */}
+              <path d="M100 115 L100 45" stroke="url(#trunkGold)" strokeWidth="4" fill="none" />
+              
+              {/* Main branches */}
+              <path d="M100 105 Q80 100 60 90" stroke="url(#trunkGold)" strokeWidth="3" fill="none" />
+              <path d="M100 105 Q120 100 140 90" stroke="url(#trunkGold)" strokeWidth="3" fill="none" />
+              <path d="M100 90 Q75 85 50 75" stroke="url(#trunkGold)" strokeWidth="2.5" fill="none" />
+              <path d="M100 90 Q125 85 150 75" stroke="url(#trunkGold)" strokeWidth="2.5" fill="none" />
+              <path d="M100 75 Q70 70 40 65" stroke="url(#trunkGold)" strokeWidth="2" fill="none" />
+              <path d="M100 75 Q130 70 160 65" stroke="url(#trunkGold)" strokeWidth="2" fill="none" />
+              <path d="M100 60 Q65 58 30 60" stroke="url(#trunkGold)" strokeWidth="1.5" fill="none" />
+              <path d="M100 60 Q135 58 170 60" stroke="url(#trunkGold)" strokeWidth="1.5" fill="none" />
+              
+              {/* Bodhi leaves - Heart shaped with pointed tips - Top section */}
+              <g className="animate-[leafSway_3s_ease-in-out_infinite]" style={{ transformOrigin: '100px 35px' }}>
+                <path d="M100 25 Q95 30 100 40 Q105 30 100 25 M100 40 L100 48" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.2s_ease-in-out_infinite_0.1s]" style={{ transformOrigin: '88px 38px' }}>
+                <path d="M88 30 Q83 35 88 45 Q93 35 88 30 M88 45 L88 52" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_2.8s_ease-in-out_infinite_0.2s]" style={{ transformOrigin: '112px 38px' }}>
+                <path d="M112 30 Q107 35 112 45 Q117 35 112 30 M112 45 L112 52" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              
+              {/* Second row */}
+              <g className="animate-[leafSway_3.5s_ease-in-out_infinite_0.15s]" style={{ transformOrigin: '75px 48px' }}>
+                <path d="M75 40 Q70 45 75 55 Q80 45 75 40 M75 55 L75 62" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.3s_ease-in-out_infinite_0.25s]" style={{ transformOrigin: '125px 48px' }}>
+                <path d="M125 40 Q120 45 125 55 Q130 45 125 40 M125 55 L125 62" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.1s_ease-in-out_infinite_0.3s]" style={{ transformOrigin: '100px 52px' }}>
+                <path d="M100 45 Q95 50 100 60 Q105 50 100 45 M100 60 L100 67" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              
+              {/* Third row - wider */}
+              <g className="animate-[leafSway_3.4s_ease-in-out_infinite_0.1s]" style={{ transformOrigin: '60px 58px' }}>
+                <path d="M60 50 Q55 55 60 65 Q65 55 60 50 M60 65 L60 72" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.6s_ease-in-out_infinite_0.2s]" style={{ transformOrigin: '140px 58px' }}>
+                <path d="M140 50 Q135 55 140 65 Q145 55 140 50 M140 65 L140 72" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.2s_ease-in-out_infinite_0.35s]" style={{ transformOrigin: '82px 58px' }}>
+                <path d="M82 52 Q77 57 82 67 Q87 57 82 52 M82 67 L82 74" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3s_ease-in-out_infinite_0.4s]" style={{ transformOrigin: '118px 58px' }}>
+                <path d="M118 52 Q113 57 118 67 Q123 57 118 52 M118 67 L118 74" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              
+              {/* Fourth row - widest spread */}
+              <g className="animate-[leafSway_3.7s_ease-in-out_infinite_0.05s]" style={{ transformOrigin: '45px 68px' }}>
+                <path d="M45 60 Q40 65 45 75 Q50 65 45 60 M45 75 L45 82" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.8s_ease-in-out_infinite_0.15s]" style={{ transformOrigin: '155px 68px' }}>
+                <path d="M155 60 Q150 65 155 75 Q160 65 155 60 M155 75 L155 82" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.3s_ease-in-out_infinite_0.25s]" style={{ transformOrigin: '68px 70px' }}>
+                <path d="M68 62 Q63 67 68 77 Q73 67 68 62 M68 77 L68 84" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.5s_ease-in-out_infinite_0.35s]" style={{ transformOrigin: '132px 70px' }}>
+                <path d="M132 62 Q127 67 132 77 Q137 67 132 62 M132 77 L132 84" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.1s_ease-in-out_infinite_0.45s]" style={{ transformOrigin: '100px 72px' }}>
+                <path d="M100 65 Q95 70 100 80 Q105 70 100 65 M100 80 L100 87" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              
+              {/* Fifth row */}
+              <g className="animate-[leafSway_3.9s_ease-in-out_infinite_0.1s]" style={{ transformOrigin: '32px 78px' }}>
+                <path d="M32 70 Q27 75 32 85 Q37 75 32 70 M32 85 L32 92" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_4s_ease-in-out_infinite_0.2s]" style={{ transformOrigin: '168px 78px' }}>
+                <path d="M168 70 Q163 75 168 85 Q173 75 168 70 M168 85 L168 92" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.4s_ease-in-out_infinite_0.3s]" style={{ transformOrigin: '52px 80px' }}>
+                <path d="M52 72 Q47 77 52 87 Q57 77 52 72 M52 87 L52 94" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.6s_ease-in-out_infinite_0.4s]" style={{ transformOrigin: '148px 80px' }}>
+                <path d="M148 72 Q143 77 148 87 Q153 77 148 72 M148 87 L148 94" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.2s_ease-in-out_infinite_0.5s]" style={{ transformOrigin: '78px 82px' }}>
+                <path d="M78 75 Q73 80 78 90 Q83 80 78 75 M78 90 L78 97" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3s_ease-in-out_infinite_0.55s]" style={{ transformOrigin: '122px 82px' }}>
+                <path d="M122 75 Q117 80 122 90 Q127 80 122 75 M122 90 L122 97" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              
+              {/* Sixth row - lower spreading */}
+              <g className="animate-[leafSway_3.8s_ease-in-out_infinite_0.15s]" style={{ transformOrigin: '40px 92px' }}>
+                <path d="M40 85 Q35 90 40 100 Q45 90 40 85 M40 100 L40 107" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_4.1s_ease-in-out_infinite_0.25s]" style={{ transformOrigin: '160px 92px' }}>
+                <path d="M160 85 Q155 90 160 100 Q165 90 160 85 M160 100 L160 107" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.5s_ease-in-out_infinite_0.35s]" style={{ transformOrigin: '62px 95px' }}>
+                <path d="M62 88 Q57 93 62 103 Q67 93 62 88 M62 103 L62 110" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.7s_ease-in-out_infinite_0.45s]" style={{ transformOrigin: '138px 95px' }}>
+                <path d="M138 88 Q133 93 138 103 Q143 93 138 88 M138 103 L138 110" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.3s_ease-in-out_infinite_0.55s]" style={{ transformOrigin: '90px 98px' }}>
+                <path d="M90 92 Q85 97 90 107 Q95 97 90 92 M90 107 L90 114" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+              <g className="animate-[leafSway_3.1s_ease-in-out_infinite_0.6s]" style={{ transformOrigin: '110px 98px' }}>
+                <path d="M110 92 Q105 97 110 107 Q115 97 110 92 M110 107 L110 114" fill="url(#leafGold)" stroke="url(#leafGoldDark)" strokeWidth="0.5" />
+              </g>
+            </g>
           </svg>
+          
+          <style jsx>{`
+            @keyframes sway {
+              0%, 100% { transform: rotate(-1deg); }
+              50% { transform: rotate(1deg); }
+            }
+            @keyframes leafSway {
+              0%, 100% { transform: rotate(-3deg); }
+              50% { transform: rotate(3deg); }
+            }
+          `}</style>
         </div>
 
         {/* Quote of the Day */}
