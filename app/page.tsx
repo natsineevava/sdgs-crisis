@@ -11,7 +11,6 @@ import {
   calculateCheckInResult,
   type CheckInAnswers,
   type CheckInResult,
-  type CategoryLevel,
 } from '@/lib/store'
 
 type Screen =
@@ -31,39 +30,39 @@ interface Track {
   color?: string
 }
 
-interface DailyStatus {
-  date: string
-  overallLevel: CategoryLevel
-  sleep: CategoryLevel
-  balance: CategoryLevel
-  body: CategoryLevel
-}
-
 export default function DhammaDailyApp() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null)
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [selectedAlbum, setSelectedAlbum] = useState<Track | null>(null)
-  const [focusMinutes, setFocusMinutes] = useState(25)
-  const [history, setHistory] = useState<DailyStatus[]>([])
+  const [treeLevel, setTreeLevel] = useState(1) // 1-21 levels
 
   // Load persisted data on mount
   useEffect(() => {
-    const savedFocusMinutes = localStorage.getItem('dhamma-focus-minutes')
-    const savedHistory = localStorage.getItem('dhamma-history')
+    const savedTreeLevel = localStorage.getItem('dhamma-tree-level')
+    const savedLastCheckIn = localStorage.getItem('dhamma-last-checkin')
     const savedResult = localStorage.getItem('dhamma-today-result')
 
-    if (savedFocusMinutes) {
-      setFocusMinutes(parseInt(savedFocusMinutes))
+    if (savedTreeLevel) {
+      setTreeLevel(parseInt(savedTreeLevel))
     }
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory))
-    }
+    
     if (savedResult) {
       const result = JSON.parse(savedResult)
       const today = new Date().toDateString()
       if (new Date(result.date).toDateString() === today) {
         setCheckInResult(result)
+      }
+    }
+
+    // Check if it's a new day - allow check-in again
+    if (savedLastCheckIn) {
+      const lastDate = new Date(savedLastCheckIn).toDateString()
+      const today = new Date().toDateString()
+      if (lastDate !== today) {
+        // New day - user can check in again
+        localStorage.removeItem('dhamma-today-result')
+        setCheckInResult(null)
       }
     }
   }, [])
@@ -76,25 +75,14 @@ export default function DhammaDailyApp() {
     const result = calculateCheckInResult(answers)
     setCheckInResult(result)
 
-    // Update focus minutes
-    const newMinutes = focusMinutes + 5
-    setFocusMinutes(newMinutes)
-    localStorage.setItem('dhamma-focus-minutes', newMinutes.toString())
+    // Increase tree level (max 21)
+    const newLevel = Math.min(treeLevel + 1, 21)
+    setTreeLevel(newLevel)
+    localStorage.setItem('dhamma-tree-level', newLevel.toString())
 
-    // Save today's result
+    // Save today's result and check-in date
     localStorage.setItem('dhamma-today-result', JSON.stringify(result))
-
-    // Add to history
-    const newStatus: DailyStatus = {
-      date: result.date,
-      overallLevel: result.overallLevel,
-      sleep: result.sleep.level,
-      balance: result.balance.level,
-      body: result.body.level,
-    }
-    const newHistory = [newStatus, ...history].slice(0, 30)
-    setHistory(newHistory)
-    localStorage.setItem('dhamma-history', JSON.stringify(newHistory))
+    localStorage.setItem('dhamma-last-checkin', new Date().toISOString())
 
     setCurrentScreen('results')
   }
@@ -137,7 +125,7 @@ export default function DhammaDailyApp() {
         {currentScreen === 'results' && checkInResult && (
           <ResultsScreen
             result={checkInResult}
-            focusMinutes={focusMinutes}
+            treeLevel={treeLevel}
             onHome={handleGoHome}
             onPodcast={() => setCurrentScreen('listen')}
           />
