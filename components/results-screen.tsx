@@ -5,13 +5,12 @@ import type { CheckInResult } from '@/lib/store'
 interface ResultsScreenProps {
   result: CheckInResult
   focusMinutes: number
-  onViewDetail: () => void
   onHome: () => void
 }
 
 export function ResultsScreen({
   focusMinutes,
-  onViewDetail,
+  onHome,
 }: ResultsScreenProps) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -71,12 +70,12 @@ export function ResultsScreen({
           </div>
         </div>
 
-        {/* Detail Button - Large */}
+        {/* Home Button - Large */}
         <button
-          onClick={onViewDetail}
-          className="w-full rounded-2xl border-3 border-gray-900 bg-white py-5 text-center text-xl font-bold text-gray-900 shadow-lg transition-all active:scale-[0.98]"
+          onClick={onHome}
+          className="w-full rounded-2xl bg-emerald-500 py-5 text-center text-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] active:bg-emerald-600"
         >
-          ดูรายละเอียด
+          กลับหน้าหลัก
         </button>
       </div>
     </div>
