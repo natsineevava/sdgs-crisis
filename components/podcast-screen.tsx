@@ -106,16 +106,16 @@ export function PodcastScreen({
 
       {/* Track List */}
       <div className="flex-1 px-5 pb-6 pt-2">
-        <div className="space-y-4">
+        <div className="space-y-5">
           {tracks.map((track) => (
             <button
               key={track.id}
               onClick={() => onSelectAlbum(track)}
-              className={`flex w-full items-center gap-4 rounded-2xl ${track.color} p-4 text-left shadow-lg transition-all active:scale-[0.98]`}
-              style={{ minHeight: '90px' }}
+              className={`flex w-full items-center gap-5 rounded-3xl ${track.color} p-5 text-left shadow-lg transition-all active:scale-[0.98]`}
+              style={{ minHeight: '120px' }}
             >
               {/* Album Art */}
-              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-gray-800 shadow-md">
+              <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-800 shadow-md">
                 <Image
                   src={track.imageUrl}
                   alt={track.nameThai}
@@ -125,12 +125,12 @@ export function PodcastScreen({
               </div>
               {/* Track Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-bold text-white truncate">{track.nameThai}</p>
-                <p className="text-sm text-white/90 truncate">{track.teacher}</p>
+                <p className="text-xl font-bold text-white truncate">{track.nameThai}</p>
+                <p className="text-base text-white/90 truncate">{track.teacher}</p>
               </div>
               {/* Play Button */}
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/30 shadow-md">
-                <Play className="h-6 w-6 text-white" fill="white" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/30 shadow-md">
+                <Play className="h-7 w-7 text-white" fill="white" />
               </div>
             </button>
           ))}

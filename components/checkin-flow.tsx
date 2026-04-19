@@ -105,26 +105,26 @@ export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
           </h2>
         </div>
 
-        {/* Large Answer Buttons - Full Width, High Contrast */}
-        <div className="mt-auto flex flex-col gap-4 pb-8">
+        {/* Extra Large Answer Buttons - Full Width, High Contrast */}
+        <div className="mt-auto flex flex-col gap-5 pb-8">
           {/* Yes Button - Green */}
           <button
             onClick={() => handleAnswer(true)}
-            className="flex w-full items-center justify-center gap-4 rounded-3xl bg-emerald-500 px-8 py-8 text-white shadow-lg transition-all active:scale-[0.98] active:bg-emerald-600"
-            style={{ minHeight: '100px' }}
+            className="flex w-full items-center justify-center gap-5 rounded-3xl bg-emerald-500 px-8 py-10 text-white shadow-lg transition-all active:scale-[0.98] active:bg-emerald-600"
+            style={{ minHeight: '130px' }}
           >
-            <span className="text-5xl">😊</span>
-            <span className="text-3xl font-bold">ใช่</span>
+            <span className="text-6xl">😊</span>
+            <span className="text-4xl font-bold">ใช่</span>
           </button>
 
           {/* No Button - Red/Coral */}
           <button
             onClick={() => handleAnswer(false)}
-            className="flex w-full items-center justify-center gap-4 rounded-3xl bg-rose-500 px-8 py-8 text-white shadow-lg transition-all active:scale-[0.98] active:bg-rose-600"
-            style={{ minHeight: '100px' }}
+            className="flex w-full items-center justify-center gap-5 rounded-3xl bg-rose-500 px-8 py-10 text-white shadow-lg transition-all active:scale-[0.98] active:bg-rose-600"
+            style={{ minHeight: '130px' }}
           >
-            <span className="text-5xl">😔</span>
-            <span className="text-3xl font-bold">ไม่ใช่</span>
+            <span className="text-6xl">😔</span>
+            <span className="text-4xl font-bold">ไม่ใช่</span>
           </button>
         </div>
       </div>
