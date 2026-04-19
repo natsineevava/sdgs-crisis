@@ -139,6 +139,7 @@ export default function DhammaDailyApp() {
             result={checkInResult}
             focusMinutes={focusMinutes}
             onHome={handleGoHome}
+            onPodcast={() => setCurrentScreen('listen')}
           />
         )}
 
