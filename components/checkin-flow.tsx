@@ -7,25 +7,21 @@ import { initialAnswers } from '@/lib/store'
 
 interface Question {
   id: keyof CheckInAnswers
+  text: string
   textThai: string
   emoji: string
-  // concerningAnswer indicates which answer is concerning (true = "yes" is concerning, false = "no" is concerning)
-  concerningAnswer: boolean
 }
 
 const questions: Question[] = [
-  // Category 1: Sleep Quality (REM Sleep Behavior Disorder)
-  { id: 'sleep1', textThai: 'คืนที่ผ่านมาหลับพักผ่อนได้ดีไหม?', emoji: '😴', concerningAnswer: false },
-  { id: 'sleep2', textThai: 'มีคนสังเกตว่าคุณพูดหรือขยับตัวขณะหลับไหม?', emoji: '🗣️', concerningAnswer: true },
-  { id: 'sleep3', textThai: 'ตื่นนอนมาพร้อมความฝันที่วุ่นวายหรือน่ากลัวไหม?', emoji: '💭', concerningAnswer: true },
-  // Category 2: Balance & Movement (Postural Instability)
-  { id: 'balance1', textThai: 'รู้สึกมั่นคงขณะเดินหรือยืนวันนี้ไหม?', emoji: '🚶', concerningAnswer: false },
-  { id: 'balance2', textThai: 'มีการเซหรือเกือบล้มวันนี้ไหม?', emoji: '⚠️', concerningAnswer: true },
-  { id: 'balance3', textThai: 'ต้องการความช่วยเหลือในการลุกขึ้นจากที่นั่งไหม?', emoji: '🤝', concerningAnswer: true },
-  // Category 3: Body Regulation (Autonomic Dysfunction / Hypotension)
-  { id: 'body1', textThai: 'รู้สึกมึนหัวหรือเวียนศีรษะเมื่อลุกขึ้นยืนไหม?', emoji: '🌀', concerningAnswer: true },
-  { id: 'body2', textThai: 'รู้สึกอ่อนเพลียผิดปกติหรือหัวใจเต้นผิดจังหวะวันนี้ไหม?', emoji: '❤️', concerningAnswer: true },
-  { id: 'body3', textThai: 'ดื่มน้ำและรับประทานอาหารได้เพียงพอวันนี้ไหม?', emoji: '🍵', concerningAnswer: false },
+  { id: 'sleep1', text: 'How are you feeling today?', textThai: 'วันนี้คุณรู้สึกอย่างไร?', emoji: '😊' },
+  { id: 'sleep2', text: 'Did you sleep well?', textThai: 'คุณหลับสบายไหม?', emoji: '😴' },
+  { id: 'sleep3', text: 'Any vivid dreams?', textThai: 'ฝันชัดเจนไหม?', emoji: '💭' },
+  { id: 'balance1', text: 'Feeling steady today?', textThai: 'รู้สึกมั่นคงไหม?', emoji: '🧘' },
+  { id: 'balance2', text: 'Any dizziness?', textThai: 'มีอาการเวียนศีรษะไหม?', emoji: '🌀' },
+  { id: 'balance3', text: 'Need help moving?', textThai: 'ต้องการความช่วยเหลือไหม?', emoji: '🤝' },
+  { id: 'body1', text: 'Feeling tired?', textThai: 'รู้สึกเหนื่อยไหม?', emoji: '😓' },
+  { id: 'body2', text: 'Ate and drank well?', textThai: 'ทานอาหารดีไหม?', emoji: '🍵' },
+  { id: 'body3', text: 'Any unusual symptoms?', textThai: 'มีอาการผิดปกติไหม?', emoji: '❤️' },
 ]
 
 interface CheckInFlowProps {
@@ -97,10 +93,13 @@ export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
         </div>
 
         {/* Question Text - Clear & Large */}
-        <div className="mb-6 text-center px-2">
-          <h2 className="text-2xl font-bold text-gray-900 leading-relaxed">
+        <div className="mb-6 text-center">
+          <h2 className="mb-2 text-2xl font-bold text-gray-900">
             {currentQuestion.textThai}
           </h2>
+          <p className="text-base text-gray-500">
+            {currentQuestion.text}
+          </p>
         </div>
 
         {/* Large Answer Buttons - Full Width, High Contrast */}

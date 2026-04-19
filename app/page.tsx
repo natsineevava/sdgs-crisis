@@ -7,7 +7,7 @@ import { ResultsScreen } from '@/components/results-screen'
 import { PodcastScreen } from '@/components/podcast-screen'
 import { PlaylistScreen } from '@/components/playlist-screen'
 import { NowPlayingScreen } from '@/components/now-playing-screen'
-
+import { CaregiverDashboard } from '@/components/caregiver-dashboard'
 import {
   calculateCheckInResult,
   type CheckInAnswers,
@@ -22,6 +22,7 @@ type Screen =
   | 'listen'
   | 'playlist'
   | 'nowplaying'
+  | 'caregiver'
 
 interface Track {
   id: string
@@ -114,7 +115,9 @@ export default function DhammaDailyApp() {
     setCurrentScreen('home')
   }
 
-
+  const handleViewDetail = () => {
+    setCurrentScreen('caregiver')
+  }
 
   // Mobile container wrapper
   const MobileContainer = ({ children }: { children: React.ReactNode }) => (
@@ -141,6 +144,7 @@ export default function DhammaDailyApp() {
           <ResultsScreen
             result={checkInResult}
             focusMinutes={focusMinutes}
+            onViewDetail={handleViewDetail}
             onHome={handleGoHome}
           />
         )}
@@ -169,7 +173,13 @@ export default function DhammaDailyApp() {
           />
         )}
 
-
+        {currentScreen === 'caregiver' && (
+          <CaregiverDashboard
+            onBack={handleGoHome}
+            currentResult={checkInResult}
+            history={history}
+          />
+        )}
       </MobileContainer>
     </main>
   )
