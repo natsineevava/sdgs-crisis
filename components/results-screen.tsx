@@ -10,37 +10,35 @@ interface ResultsScreenProps {
 }
 
 export function ResultsScreen({
-  result,
   focusMinutes,
   onViewDetail,
-  onHome,
 }: ResultsScreenProps) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       {/* Header */}
-      <div className="flex items-center justify-center px-4 py-3">
-        <span className="text-base font-semibold text-gray-900">Album</span>
+      <div className="flex items-center justify-center px-5 py-4">
+        <span className="text-xl font-bold text-gray-900">สรุปผล</span>
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col items-center px-5 py-6">
+      <div className="flex flex-1 flex-col items-center px-6 py-6">
         {/* Focus Time Message */}
-        <div className="mb-6 text-left w-full">
-          <p className="text-base text-gray-900">
-            You have focused
+        <div className="mb-8 text-center w-full">
+          <p className="text-xl text-gray-900">
+            วันนี้คุณได้มีสติ
           </p>
-          <p className="text-base text-gray-900">
-            for <span className="font-semibold">{focusMinutes} mins</span> today.
+          <p className="text-xl text-gray-900">
+            เป็นเวลา <span className="font-bold text-emerald-600">{focusMinutes} นาที</span>
           </p>
         </div>
 
         {/* Tree Illustration */}
-        <div className="mb-6 flex flex-1 items-center justify-center">
+        <div className="mb-8 flex flex-1 items-center justify-center">
           <div className="relative">
             {/* Circular background */}
-            <div className="flex h-52 w-52 items-center justify-center rounded-full bg-emerald-100">
+            <div className="flex h-64 w-64 items-center justify-center rounded-full bg-emerald-100 shadow-lg">
               {/* Tree SVG */}
-              <svg viewBox="0 0 100 120" className="h-40 w-40">
+              <svg viewBox="0 0 100 120" className="h-48 w-48">
                 {/* Tree trunk */}
                 <path
                   d="M46 120 L46 70 Q46 65 50 60 Q54 65 54 70 L54 120"
@@ -73,12 +71,12 @@ export function ResultsScreen({
           </div>
         </div>
 
-        {/* Detail Button */}
+        {/* Detail Button - Large */}
         <button
           onClick={onViewDetail}
-          className="w-full rounded-full border-2 border-gray-900 bg-white py-3 text-center text-sm font-medium text-gray-900 transition-all active:scale-[0.98]"
+          className="w-full rounded-2xl border-3 border-gray-900 bg-white py-5 text-center text-xl font-bold text-gray-900 shadow-lg transition-all active:scale-[0.98]"
         >
-          Detail
+          ดูรายละเอียด
         </button>
       </div>
     </div>
