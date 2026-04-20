@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-// Default patient ID for demo
-const DEFAULT_PATIENT_ID = '00000000-0000-0000-0000-000000000001'
-
 interface CheckInAnswers {
   q1: boolean
   q2: boolean
@@ -29,13 +26,26 @@ const questionConcerning: Record<string, boolean> = {
   q9: false, // Concerning if NO (didn't eat/drink well)
 }
 
-// Red flag questions
-const redFlagQuestions = ['q2', 'q5', 'q7', 'q8']
-
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    const { answers } = await request.json() as { answers: CheckInAnswers }
+    const { answers, deviceId } = await request.json() as { answers: CheckInAnswers; deviceId: string }
+
+    if (!deviceId) {
+      return NextResponse.json({ error: 'Device ID required' }, { status: 400 })
+    }
+
+    // Find patient by device ID
+    const { data: patient, error: patientError } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('device_id', deviceId)
+      .single()
+
+    if (patientError || !patient) {
+      console.error('Patient not found:', patientError)
+      return NextResponse.json({ error: 'Patient not found' }, { status: 404 })
+    }
 
     // Calculate scores
     let sleepScore = 0
@@ -94,11 +104,13 @@ export async function POST(request: Request) {
       return 'attention'
     }
 
+    const now = new Date().toISOString()
+
     // Insert check-in record
     const { data: checkin, error: checkinError } = await supabase
       .from('daily_checkins')
       .insert({
-        patient_id: DEFAULT_PATIENT_ID,
+        patient_id: patient.id,
         q1_sleep_well: answers.q1,
         q2_sleep_talking: answers.q2,
         q3_vivid_dreams: answers.q3,
@@ -140,20 +152,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: resultsError.message }, { status: 500 })
     }
 
-    // Increment tree level (max 21)
-    const { data: patient } = await supabase
-      .from('patients')
-      .select('tree_level')
-      .eq('id', DEFAULT_PATIENT_ID)
-      .single()
-
-    const currentLevel = patient?.tree_level || 1
+    // Increment tree level (max 21) and update last_checkin_at
+    const currentLevel = patient.tree_level || 1
     const newLevel = Math.min(currentLevel + 1, 21)
 
-    await supabase
+    const { error: updateError } = await supabase
       .from('patients')
-      .update({ tree_level: newLevel })
-      .eq('id', DEFAULT_PATIENT_ID)
+      .update({ 
+        tree_level: newLevel,
+        last_checkin_at: now,
+      })
+      .eq('id', patient.id)
+
+    if (updateError) {
+      console.error('Patient update error:', updateError)
+    }
 
     return NextResponse.json({
       success: true,
@@ -161,6 +174,7 @@ export async function POST(request: Request) {
       treeLevel: newLevel,
       alertLevel,
       patientMessage,
+      lastCheckinAt: now,
       scores: {
         sleep: sleepScore,
         balance: balanceScore,
