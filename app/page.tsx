@@ -1,19 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { HomeScreen } from '@/components/home-screen'
 import { CheckInFlow } from '@/components/checkin-flow'
 import { ResultsScreen } from '@/components/results-screen'
 import { PodcastScreen } from '@/components/podcast-screen'
 import { PlaylistScreen } from '@/components/playlist-screen'
 import { NowPlayingScreen } from '@/components/now-playing-screen'
-import { CaregiverDashboard } from '@/components/caregiver-dashboard'
-import {
-  calculateCheckInResult,
-  type CheckInAnswers,
-  type CheckInResult,
-  type CategoryLevel,
-} from '@/lib/store'
 
 type Screen =
   | 'home'
@@ -22,7 +16,6 @@ type Screen =
   | 'listen'
   | 'playlist'
   | 'nowplaying'
-  | 'caregiver'
 
 interface Track {
   id: string
@@ -31,74 +24,150 @@ interface Track {
   teacher: string
   duration: string
   color?: string
+  image?: string
 }
 
-interface DailyStatus {
-  date: string
-  overallLevel: CategoryLevel
-  sleep: CategoryLevel
-  balance: CategoryLevel
-  body: CategoryLevel
+interface CheckInResult {
+  alertLevel: 'good' | 'monitor' | 'attention'
+  patientMessage: string
+  scores: {
+    sleep: number
+    balance: number
+    body: number
+    total: number
+    redFlags: number
+  }
+  treeLevel: number
 }
+
+interface CheckInAnswers {
+  q1: boolean
+  q2: boolean
+  q3: boolean
+  q4: boolean
+  q5: boolean
+  q6: boolean
+  q7: boolean
+  q8: boolean
+  q9: boolean
+}
+
+interface Patient {
+  id: string
+  name: string
+  tree_level: number
+}
+
+const DEMO_PATIENT_ID = '00000000-0000-0000-0000-000000000001'
 
 export default function DhammaDailyApp() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null)
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [selectedAlbum, setSelectedAlbum] = useState<Track | null>(null)
-  const [focusMinutes, setFocusMinutes] = useState(25)
-  const [history, setHistory] = useState<DailyStatus[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [patient, setPatient] = useState<Patient | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Load persisted data on mount
+  const supabase = createClient()
+
+  // Fetch patient data
+  const fetchPatient = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('id', DEMO_PATIENT_ID)
+      .single()
+
+    if (!error && data) {
+      setPatient(data)
+    }
+    setIsLoading(false)
+  }, [supabase])
+
+  // Set up realtime subscription
   useEffect(() => {
-    const savedFocusMinutes = localStorage.getItem('dhamma-focus-minutes')
-    const savedHistory = localStorage.getItem('dhamma-history')
-    const savedResult = localStorage.getItem('dhamma-today-result')
+    fetchPatient()
 
-    if (savedFocusMinutes) {
-      setFocusMinutes(parseInt(savedFocusMinutes))
+    // Subscribe to patient changes (tree level updates)
+    const patientChannel = supabase
+      .channel('patient-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'patients',
+          filter: `id=eq.${DEMO_PATIENT_ID}`,
+        },
+        (payload) => {
+          if (payload.new) {
+            setPatient(payload.new as Patient)
+          }
+        }
+      )
+      .subscribe()
+
+    // Subscribe to new check-in results
+    const checkinChannel = supabase
+      .channel('checkin-results')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'daily_checkin_results',
+        },
+        () => {
+          // Refresh patient data when a new check-in result is inserted
+          fetchPatient()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(patientChannel)
+      supabase.removeChannel(checkinChannel)
     }
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory))
-    }
-    if (savedResult) {
-      const result = JSON.parse(savedResult)
-      const today = new Date().toDateString()
-      if (new Date(result.date).toDateString() === today) {
-        setCheckInResult(result)
-      }
-    }
-  }, [])
+  }, [supabase, fetchPatient])
+
+  const treeLevel = patient?.tree_level || 1
 
   const handleNavigate = (screen: 'listen' | 'checkin') => {
     setCurrentScreen(screen)
   }
 
-  const handleCheckInComplete = (answers: CheckInAnswers) => {
-    const result = calculateCheckInResult(answers)
-    setCheckInResult(result)
+  const handleCheckInComplete = async (answers: CheckInAnswers) => {
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+      })
 
-    // Update focus minutes
-    const newMinutes = focusMinutes + 5
-    setFocusMinutes(newMinutes)
-    localStorage.setItem('dhamma-focus-minutes', newMinutes.toString())
+      const data = await response.json()
 
-    // Save today's result
-    localStorage.setItem('dhamma-today-result', JSON.stringify(result))
-
-    // Add to history
-    const newStatus: DailyStatus = {
-      date: result.date,
-      overallLevel: result.overallLevel,
-      sleep: result.sleep.level,
-      balance: result.balance.level,
-      body: result.body.level,
+      if (data.success) {
+        setCheckInResult({
+          alertLevel: data.alertLevel,
+          patientMessage: data.patientMessage,
+          scores: data.scores,
+          treeLevel: data.treeLevel,
+        })
+        // Update local patient state with new tree level
+        setPatient(prev => prev ? { ...prev, tree_level: data.treeLevel } : prev)
+        setCurrentScreen('results')
+      } else {
+        console.error('Check-in failed:', data.error)
+        // Still show results even if DB fails
+        setCurrentScreen('results')
+      }
+    } catch (error) {
+      console.error('Check-in error:', error)
+    } finally {
+      setIsSubmitting(false)
     }
-    const newHistory = [newStatus, ...history].slice(0, 30)
-    setHistory(newHistory)
-    localStorage.setItem('dhamma-history', JSON.stringify(newHistory))
-
-    setCurrentScreen('results')
   }
 
   const handleSelectAlbum = (track: Track) => {
@@ -115,10 +184,6 @@ export default function DhammaDailyApp() {
     setCurrentScreen('home')
   }
 
-  const handleViewDetail = () => {
-    setCurrentScreen('caregiver')
-  }
-
   // Mobile container wrapper
   const MobileContainer = ({ children }: { children: React.ReactNode }) => (
     <div className="mx-auto min-h-screen w-full max-w-md bg-white shadow-xl">
@@ -130,7 +195,7 @@ export default function DhammaDailyApp() {
     <main className="min-h-screen bg-gray-100">
       <MobileContainer>
         {currentScreen === 'home' && (
-          <HomeScreen onNavigate={handleNavigate} />
+          <HomeScreen onNavigate={handleNavigate} userName={patient?.name} />
         )}
 
         {currentScreen === 'checkin' && (
@@ -140,12 +205,13 @@ export default function DhammaDailyApp() {
           />
         )}
 
-        {currentScreen === 'results' && checkInResult && (
+        {currentScreen === 'results' && (
           <ResultsScreen
-            result={checkInResult}
-            focusMinutes={focusMinutes}
-            onViewDetail={handleViewDetail}
+            treeLevel={checkInResult?.treeLevel || treeLevel}
+            alertLevel={checkInResult?.alertLevel || 'good'}
+            patientMessage={checkInResult?.patientMessage || 'วันนี้คุณดูแลตัวเองได้ดีมาก'}
             onHome={handleGoHome}
+            onPodcast={() => setCurrentScreen('listen')}
           />
         )}
 
@@ -154,7 +220,6 @@ export default function DhammaDailyApp() {
             onBack={handleGoHome}
             onPlay={handlePlayTrack}
             onSelectAlbum={handleSelectAlbum}
-            recommendedTrack={checkInResult?.dhammaRecommendation}
           />
         )}
 
@@ -170,14 +235,6 @@ export default function DhammaDailyApp() {
           <NowPlayingScreen
             track={currentTrack}
             onClose={() => setCurrentScreen(selectedAlbum ? 'playlist' : 'listen')}
-          />
-        )}
-
-        {currentScreen === 'caregiver' && (
-          <CaregiverDashboard
-            onBack={handleGoHome}
-            currentResult={checkInResult}
-            history={history}
           />
         )}
       </MobileContainer>

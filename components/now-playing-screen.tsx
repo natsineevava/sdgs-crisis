@@ -10,6 +10,7 @@ interface Track {
   nameEnglish: string
   teacher: string
   duration: string
+  imageUrl?: string
 }
 
 interface NowPlayingScreenProps {
@@ -80,24 +81,24 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       {/* Header */}
-      <div className="flex items-center gap-3 bg-rose-400 px-4 py-3">
+      <div className="flex items-center gap-4 bg-rose-400 px-5 py-4">
         <button
           onClick={onClose}
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors active:scale-95"
-          aria-label="Close player"
+          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 transition-colors active:scale-95"
+          aria-label="ปิด"
         >
-          <ChevronLeft className="h-5 w-5 text-white" />
+          <ChevronLeft className="h-7 w-7 text-white" />
         </button>
-        <h1 className="flex-1 text-center text-lg font-semibold text-white">Playing</h1>
-        <div className="w-8" />
+        <h1 className="flex-1 text-center text-2xl font-bold text-white">กำลังเล่น</h1>
+        <div className="w-12" />
       </div>
 
       {/* Album Art */}
-      <div className="flex flex-1 flex-col items-center px-6 pt-6">
-        <div className="relative mb-5 aspect-square w-full max-w-[240px] overflow-hidden rounded-xl bg-gray-200 shadow-lg">
+      <div className="flex flex-1 flex-col items-center px-8 pt-8">
+        <div className="relative mb-6 aspect-square w-full max-w-[280px] overflow-hidden rounded-3xl bg-gray-200 shadow-2xl">
           <Image
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-73d6WTMo8djmFuy0RHVpFYVjmvGUzJ.png"
-            alt="Buddhist meditation"
+            src={track.imageUrl || '/images/dhamma-1.jpg'}
+            alt={track.nameThai}
             fill
             className="object-cover"
             priority
@@ -105,62 +106,62 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
         </div>
 
         {/* Track Info */}
-        <div className="mb-5 text-center">
-          <h2 className="mb-0.5 text-lg font-semibold text-gray-900">ผู้ชนะสิบทิศ</h2>
-          <p className="text-xs text-gray-500">พระอาจารย์ชัยภัส</p>
+        <div className="mb-6 text-center">
+          <h2 className="mb-1 text-2xl font-bold text-gray-900">{track.nameThai}</h2>
+          <p className="text-base text-gray-500">{track.teacher}</p>
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-5 w-full max-w-[240px]">
-          <div className="mb-1.5 text-left text-xs text-gray-500">
+        <div className="mb-8 w-full max-w-[280px]">
+          <div className="mb-2 text-left text-sm text-gray-500">
             {formatTime(currentTime)}
           </div>
-          <div className="relative h-0.5 w-full rounded-full bg-gray-200">
+          <div className="relative h-2 w-full rounded-full bg-gray-200">
             <div
-              className="absolute left-0 top-0 h-full rounded-full bg-gray-900 transition-all duration-300"
+              className="absolute left-0 top-0 h-full rounded-full bg-rose-400 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
             <div
-              className="absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-gray-900"
+              className="absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-rose-400 shadow-lg"
               style={{ left: `${progress}%`, transform: `translate(-50%, -50%)` }}
             />
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center justify-center gap-10">
+        {/* Controls - Large Buttons */}
+        <div className="flex items-center justify-center gap-8">
           <button
             onClick={skipBack}
-            className="flex h-10 w-10 items-center justify-center transition-colors active:scale-95"
-            aria-label="Skip back"
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 shadow-lg transition-all active:scale-95"
+            aria-label="ย้อนกลับ"
           >
-            <SkipBack className="h-6 w-6 text-gray-900" strokeWidth={1.5} />
+            <SkipBack className="h-8 w-8 text-gray-700" strokeWidth={2} />
           </button>
 
           <button
             onClick={togglePlayPause}
-            className="flex h-12 w-12 items-center justify-center transition-all active:scale-95"
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            className="flex h-20 w-20 items-center justify-center rounded-full bg-rose-400 shadow-xl transition-all active:scale-95"
+            aria-label={isPlaying ? 'หยุด' : 'เล่น'}
           >
             {isPlaying ? (
-              <Pause className="h-10 w-10 text-gray-900" strokeWidth={1.5} />
+              <Pause className="h-10 w-10 text-white" strokeWidth={2} fill="white" />
             ) : (
-              <Play className="ml-0.5 h-10 w-10 text-gray-900" strokeWidth={1.5} />
+              <Play className="ml-1 h-10 w-10 text-white" strokeWidth={2} fill="white" />
             )}
           </button>
 
           <button
             onClick={skipForward}
-            className="flex h-10 w-10 items-center justify-center transition-colors active:scale-95"
-            aria-label="Skip forward"
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 shadow-lg transition-all active:scale-95"
+            aria-label="ข้ามไป"
           >
-            <SkipForward className="h-6 w-6 text-gray-900" strokeWidth={1.5} />
+            <SkipForward className="h-8 w-8 text-gray-700" strokeWidth={2} />
           </button>
         </div>
       </div>
 
       {/* Bottom Spacing */}
-      <div className="h-8" />
+      <div className="h-10" />
     </div>
   )
 }

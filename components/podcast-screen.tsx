@@ -10,49 +10,54 @@ interface Track {
   nameEnglish: string
   teacher: string
   duration: string
-  imageUrl?: string
+  imageUrl: string
   color: string
 }
 
 const defaultTracks: Track[] = [
   {
     id: '1',
-    nameThai: 'Moment Apart',
-    nameEnglish: 'ODESZA',
-    teacher: 'ODESZA',
+    nameThai: 'ปล่อยวางใจ',
+    nameEnglish: 'Letting Go',
+    teacher: 'หลวงพ่อปราโมทย์',
     duration: '15 นาที',
+    imageUrl: '/images/dhamma-1.jpg',
     color: 'bg-orange-400',
   },
   {
     id: '2',
-    nameThai: 'Moment Apart',
-    nameEnglish: 'ODESZA',
-    teacher: 'ODESZA',
+    nameThai: 'สมาธิเบื้องต้น',
+    nameEnglish: 'Basic Meditation',
+    teacher: 'พระอาจารย์ชยสาโร',
     duration: '20 นาที',
+    imageUrl: '/images/dhamma-2.jpg',
     color: 'bg-amber-400',
   },
   {
     id: '3',
-    nameThai: 'Moment Apart',
-    nameEnglish: 'ODESZA',
-    teacher: 'ODESZA',
+    nameThai: 'ความสุขที่แท้จริง',
+    nameEnglish: 'True Happiness',
+    teacher: 'หลวงพ่อจรัญ',
     duration: '10 นาที',
+    imageUrl: '/images/dhamma-3.jpg',
     color: 'bg-emerald-500',
   },
   {
     id: '4',
-    nameThai: 'Moment Apart',
-    nameEnglish: 'ODESZA',
-    teacher: 'ODESZA',
+    nameThai: 'อยู่กับปัจจุบัน',
+    nameEnglish: 'Living in Present',
+    teacher: 'พระไพศาล วิสาโล',
     duration: '12 นาที',
+    imageUrl: '/images/dhamma-4.jpg',
     color: 'bg-violet-400',
   },
   {
     id: '5',
-    nameThai: 'Moment Apart',
-    nameEnglish: 'ODESZA',
-    teacher: 'ODESZA',
+    nameThai: 'หายใจอย่างมีสติ',
+    nameEnglish: 'Mindful Breathing',
+    teacher: 'หลวงปู่ชา',
     duration: '18 นาที',
+    imageUrl: '/images/dhamma-5.jpg',
     color: 'bg-rose-400',
   },
 ]
@@ -66,7 +71,6 @@ interface PodcastScreenProps {
 
 export function PodcastScreen({
   onBack,
-  onPlay,
   onSelectAlbum,
   recommendedTrack,
 }: PodcastScreenProps) {
@@ -78,6 +82,7 @@ export function PodcastScreen({
           nameEnglish: recommendedTrack.name,
           teacher: recommendedTrack.teacher,
           duration: recommendedTrack.duration,
+          imageUrl: '/images/dhamma-1.jpg',
           color: 'bg-emerald-500',
         },
         ...defaultTracks.slice(0, 4),
@@ -87,44 +92,45 @@ export function PodcastScreen({
   return (
     <div className="flex min-h-screen flex-col bg-emerald-600">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex items-center gap-4 px-5 py-4">
         <button
           onClick={onBack}
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors active:scale-95"
-          aria-label="Go back"
+          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 transition-colors active:scale-95"
+          aria-label="กลับ"
         >
-          <ChevronLeft className="h-5 w-5 text-white" />
+          <ChevronLeft className="h-7 w-7 text-white" />
         </button>
-        <h1 className="flex-1 text-center text-lg font-semibold text-white">Albums</h1>
-        <div className="w-8" />
+        <h1 className="flex-1 text-center text-2xl font-bold text-white">รายการธรรมะ</h1>
+        <div className="w-12" />
       </div>
 
       {/* Track List */}
-      <div className="flex-1 px-4 pb-4 pt-1">
-        <div className="space-y-2.5">
+      <div className="flex-1 px-5 pb-6 pt-2">
+        <div className="space-y-5">
           {tracks.map((track) => (
             <button
               key={track.id}
               onClick={() => onSelectAlbum(track)}
-              className={`flex w-full items-center gap-3 rounded-xl ${track.color} p-2.5 text-left transition-all active:scale-[0.99]`}
+              className={`flex w-full items-center gap-5 rounded-3xl ${track.color} p-5 text-left shadow-lg transition-all active:scale-[0.98]`}
+              style={{ minHeight: '120px' }}
             >
               {/* Album Art */}
-              <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-800">
+              <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-800 shadow-md">
                 <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-73d6WTMo8djmFuy0RHVpFYVjmvGUzJ.png"
-                  alt="Album art"
+                  src={track.imageUrl}
+                  alt={track.nameThai}
                   fill
-                  className="object-cover opacity-80"
+                  className="object-cover"
                 />
               </div>
               {/* Track Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{track.nameThai}</p>
-                <p className="text-xs text-white/80 truncate">{track.teacher}</p>
+                <p className="text-xl font-bold text-white truncate">{track.nameThai}</p>
+                <p className="text-base text-white/90 truncate">{track.teacher}</p>
               </div>
               {/* Play Button */}
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-                <Play className="h-4 w-4 text-white" fill="white" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/30 shadow-md">
+                <Play className="h-7 w-7 text-white" fill="white" />
               </div>
             </button>
           ))}
