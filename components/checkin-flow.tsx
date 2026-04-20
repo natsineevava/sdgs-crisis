@@ -2,31 +2,53 @@
 
 import { useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
-import type { CheckInAnswers } from '@/lib/store'
-import { initialAnswers } from '@/lib/store'
 
 interface Question {
-  id: keyof CheckInAnswers
+  id: 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7' | 'q8' | 'q9'
   textThai: string
   emoji: string
-  concerningAnswer: boolean // true = "Yes" is concerning, false = "No" is concerning
+  category: 'sleep' | 'balance' | 'body'
 }
 
 // Questions from the specification with exact Thai text
 const questions: Question[] = [
   // Category 1: Sleep Quality (REM Sleep Behavior Disorder)
-  { id: 'sleep1', textThai: 'คืนที่ผ่านมาหลับพักผ่อนได้ดีไหม?', emoji: '😴', concerningAnswer: false }, // No = concerning
-  { id: 'sleep2', textThai: 'มีคนสังเกตว่าคุณพูดหรือขยับตัวขณะหลับไหม?', emoji: '🗣️', concerningAnswer: true }, // Yes = concerning
-  { id: 'sleep3', textThai: 'ตื่นนอนมาพร้อมความฝันที่วุ่นวายหรือน่ากลัวไหม?', emoji: '😰', concerningAnswer: true }, // Yes = concerning
+  { id: 'q1', textThai: 'คืนที่ผ่านมาหลับพักผ่อนได้ดีไหม?', emoji: '😴', category: 'sleep' },
+  { id: 'q2', textThai: 'มีคนสังเกตว่าคุณพูดหรือขยับตัวขณะหลับไหม?', emoji: '🗣️', category: 'sleep' },
+  { id: 'q3', textThai: 'ตื่นนอนมาพร้อมความฝันที่วุ่นวายหรือน่ากลัวไหม?', emoji: '😰', category: 'sleep' },
   // Category 2: Balance & Movement (Postural Instability)
-  { id: 'balance1', textThai: 'รู้สึกมั่นคงขณะเดินหรือยืนวันนี้ไหม?', emoji: '🚶', concerningAnswer: false }, // No = concerning
-  { id: 'balance2', textThai: 'มีการเซหรือเกือบล้มวันนี้ไหม?', emoji: '⚠️', concerningAnswer: true }, // Yes = concerning
-  { id: 'balance3', textThai: 'ต้องการความช่วยเหลือในการลุกขึ้นจากที่นั่งไหม?', emoji: '🪑', concerningAnswer: true }, // Yes = concerning
+  { id: 'q4', textThai: 'รู้สึกมั่นคงขณะเดินหรือยืนวันนี้ไหม?', emoji: '🚶', category: 'balance' },
+  { id: 'q5', textThai: 'มีการเซหรือเกือบล้มวันนี้ไหม?', emoji: '⚠️', category: 'balance' },
+  { id: 'q6', textThai: 'ต้องการความช่วยเหลือในการลุกขึ้นจากที่นั่งไหม?', emoji: '🪑', category: 'balance' },
   // Category 3: Body Regulation (Autonomic Dysfunction / Hypotension)
-  { id: 'body1', textThai: 'รู้สึกมึนหัวหรือเวียนศีรษะเมื่อลุกขึ้นยืนไหม?', emoji: '💫', concerningAnswer: true }, // Yes = concerning
-  { id: 'body2', textThai: 'รู้สึกอ่อนเพลียผิดปกติหรือหัวใจเต้นผิดจังหวะวันนี้ไหม?', emoji: '❤️', concerningAnswer: true }, // Yes = concerning
-  { id: 'body3', textThai: 'ดื่มน้ำและรับประทานอาหารได้เพียงพอวันนี้ไหม?', emoji: '🍵', concerningAnswer: false }, // No = concerning
+  { id: 'q7', textThai: 'รู้สึกมึนหัวหรือเวียนศีรษะเมื่อลุกขึ้นยืนไหม?', emoji: '💫', category: 'body' },
+  { id: 'q8', textThai: 'รู้สึกอ่อนเพลียผิดปกติหรือหัวใจเต้นผิดจังหวะวันนี้ไหม?', emoji: '❤️', category: 'body' },
+  { id: 'q9', textThai: 'ดื่มน้ำและรับประทานอาหารได้เพียงพอวันนี้ไหม?', emoji: '🍵', category: 'body' },
 ]
+
+interface CheckInAnswers {
+  q1: boolean
+  q2: boolean
+  q3: boolean
+  q4: boolean
+  q5: boolean
+  q6: boolean
+  q7: boolean
+  q8: boolean
+  q9: boolean
+}
+
+const initialAnswers: CheckInAnswers = {
+  q1: false,
+  q2: false,
+  q3: false,
+  q4: false,
+  q5: false,
+  q6: false,
+  q7: false,
+  q8: false,
+  q9: false,
+}
 
 interface CheckInFlowProps {
   onComplete: (answers: CheckInAnswers) => void
@@ -39,6 +61,16 @@ export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
 
   const currentQuestion = questions[currentStep]
   const totalSteps = questions.length
+
+  // Get category label in Thai
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'sleep': return 'การนอนหลับ'
+      case 'balance': return 'การทรงตัว'
+      case 'body': return 'ร่างกาย'
+      default: return ''
+    }
+  }
 
   const handleAnswer = (answer: boolean) => {
     const newAnswers = {
@@ -73,9 +105,12 @@ export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
         >
           <ChevronLeft className="h-8 w-8 text-gray-700" />
         </button>
-        <span className="text-xl font-bold text-gray-900">
-          {currentStep + 1} / {totalSteps}
-        </span>
+        <div className="text-center">
+          <span className="text-xl font-bold text-gray-900">
+            {currentStep + 1} / {totalSteps}
+          </span>
+          <p className="text-sm text-gray-500">{getCategoryLabel(currentQuestion.category)}</p>
+        </div>
         <div className="w-14" />
       </div>
 

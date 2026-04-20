@@ -1,17 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import useSWR from 'swr'
 import { HomeScreen } from '@/components/home-screen'
 import { CheckInFlow } from '@/components/checkin-flow'
 import { ResultsScreen } from '@/components/results-screen'
 import { PodcastScreen } from '@/components/podcast-screen'
 import { PlaylistScreen } from '@/components/playlist-screen'
 import { NowPlayingScreen } from '@/components/now-playing-screen'
-import {
-  calculateCheckInResult,
-  type CheckInAnswers,
-  type CheckInResult,
-} from '@/lib/store'
 
 type Screen =
   | 'home'
@@ -28,63 +24,83 @@ interface Track {
   teacher: string
   duration: string
   color?: string
+  image?: string
 }
+
+interface CheckInResult {
+  alertLevel: 'good' | 'monitor' | 'attention'
+  patientMessage: string
+  scores: {
+    sleep: number
+    balance: number
+    body: number
+    total: number
+    redFlags: number
+  }
+  treeLevel: number
+}
+
+interface CheckInAnswers {
+  q1: boolean
+  q2: boolean
+  q3: boolean
+  q4: boolean
+  q5: boolean
+  q6: boolean
+  q7: boolean
+  q8: boolean
+  q9: boolean
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function DhammaDailyApp() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null)
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [selectedAlbum, setSelectedAlbum] = useState<Track | null>(null)
-  const [treeLevel, setTreeLevel] = useState(1) // 1-21 levels
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Load persisted data on mount
-  useEffect(() => {
-    const savedTreeLevel = localStorage.getItem('dhamma-tree-level')
-    const savedLastCheckIn = localStorage.getItem('dhamma-last-checkin')
-    const savedResult = localStorage.getItem('dhamma-today-result')
+  // Fetch patient data from database
+  const { data: patient, mutate: mutatePatient } = useSWR('/api/patient', fetcher)
 
-    if (savedTreeLevel) {
-      setTreeLevel(parseInt(savedTreeLevel))
-    }
-    
-    if (savedResult) {
-      const result = JSON.parse(savedResult)
-      const today = new Date().toDateString()
-      if (new Date(result.date).toDateString() === today) {
-        setCheckInResult(result)
-      }
-    }
-
-    // Check if it's a new day - allow check-in again
-    if (savedLastCheckIn) {
-      const lastDate = new Date(savedLastCheckIn).toDateString()
-      const today = new Date().toDateString()
-      if (lastDate !== today) {
-        // New day - user can check in again
-        localStorage.removeItem('dhamma-today-result')
-        setCheckInResult(null)
-      }
-    }
-  }, [])
+  const treeLevel = patient?.tree_level || 1
 
   const handleNavigate = (screen: 'listen' | 'checkin') => {
     setCurrentScreen(screen)
   }
 
-  const handleCheckInComplete = (answers: CheckInAnswers) => {
-    const result = calculateCheckInResult(answers)
-    setCheckInResult(result)
+  const handleCheckInComplete = async (answers: CheckInAnswers) => {
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+      })
 
-    // Increase tree level (max 21)
-    const newLevel = Math.min(treeLevel + 1, 21)
-    setTreeLevel(newLevel)
-    localStorage.setItem('dhamma-tree-level', newLevel.toString())
+      const data = await response.json()
 
-    // Save today's result and check-in date
-    localStorage.setItem('dhamma-today-result', JSON.stringify(result))
-    localStorage.setItem('dhamma-last-checkin', new Date().toISOString())
-
-    setCurrentScreen('results')
+      if (data.success) {
+        setCheckInResult({
+          alertLevel: data.alertLevel,
+          patientMessage: data.patientMessage,
+          scores: data.scores,
+          treeLevel: data.treeLevel,
+        })
+        // Refresh patient data to get new tree level
+        mutatePatient()
+        setCurrentScreen('results')
+      } else {
+        console.error('Check-in failed:', data.error)
+        // Still show results even if DB fails
+        setCurrentScreen('results')
+      }
+    } catch (error) {
+      console.error('Check-in error:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleSelectAlbum = (track: Track) => {
@@ -112,7 +128,7 @@ export default function DhammaDailyApp() {
     <main className="min-h-screen bg-gray-100">
       <MobileContainer>
         {currentScreen === 'home' && (
-          <HomeScreen onNavigate={handleNavigate} />
+          <HomeScreen onNavigate={handleNavigate} userName={patient?.name} />
         )}
 
         {currentScreen === 'checkin' && (
@@ -122,10 +138,11 @@ export default function DhammaDailyApp() {
           />
         )}
 
-        {currentScreen === 'results' && checkInResult && (
+        {currentScreen === 'results' && (
           <ResultsScreen
-            result={checkInResult}
-            treeLevel={treeLevel}
+            treeLevel={checkInResult?.treeLevel || treeLevel}
+            alertLevel={checkInResult?.alertLevel || 'good'}
+            patientMessage={checkInResult?.patientMessage || 'วันนี้คุณดูแลตัวเองได้ดีมาก'}
             onHome={handleGoHome}
             onPodcast={() => setCurrentScreen('listen')}
           />
@@ -136,7 +153,6 @@ export default function DhammaDailyApp() {
             onBack={handleGoHome}
             onPlay={handlePlayTrack}
             onSelectAlbum={handleSelectAlbum}
-            recommendedTrack={checkInResult?.dhammaRecommendation}
           />
         )}
 

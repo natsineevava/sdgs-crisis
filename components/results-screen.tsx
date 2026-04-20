@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import { Play } from 'lucide-react'
-import type { CheckInResult } from '@/lib/store'
 
 const quotes = [
   { thai: 'จิตที่ฝึกดีแล้ว นำความสุขมาให้', author: 'พระพุทธเจ้า' },
@@ -46,14 +45,17 @@ const growthMessages = [
 ]
 
 interface ResultsScreenProps {
-  result: CheckInResult
   treeLevel: number // 1-21
+  alertLevel?: 'good' | 'monitor' | 'attention'
+  patientMessage?: string
   onHome: () => void
   onPodcast?: () => void
 }
 
 export function ResultsScreen({
   treeLevel,
+  alertLevel = 'good',
+  patientMessage,
   onHome,
   onPodcast,
 }: ResultsScreenProps) {
