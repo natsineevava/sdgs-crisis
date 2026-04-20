@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import useSWR from 'swr'
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { HomeScreen } from '@/components/home-screen'
 import { CheckInFlow } from '@/components/checkin-flow'
 import { ResultsScreen } from '@/components/results-screen'
@@ -52,7 +52,13 @@ interface CheckInAnswers {
   q9: boolean
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+interface Patient {
+  id: string
+  name: string
+  tree_level: number
+}
+
+const DEMO_PATIENT_ID = '00000000-0000-0000-0000-000000000001'
 
 export default function DhammaDailyApp() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
@@ -60,9 +66,70 @@ export default function DhammaDailyApp() {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [selectedAlbum, setSelectedAlbum] = useState<Track | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [patient, setPatient] = useState<Patient | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch patient data from database
-  const { data: patient, mutate: mutatePatient } = useSWR('/api/patient', fetcher)
+  const supabase = createClient()
+
+  // Fetch patient data
+  const fetchPatient = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('id', DEMO_PATIENT_ID)
+      .single()
+
+    if (!error && data) {
+      setPatient(data)
+    }
+    setIsLoading(false)
+  }, [supabase])
+
+  // Set up realtime subscription
+  useEffect(() => {
+    fetchPatient()
+
+    // Subscribe to patient changes (tree level updates)
+    const patientChannel = supabase
+      .channel('patient-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'patients',
+          filter: `id=eq.${DEMO_PATIENT_ID}`,
+        },
+        (payload) => {
+          if (payload.new) {
+            setPatient(payload.new as Patient)
+          }
+        }
+      )
+      .subscribe()
+
+    // Subscribe to new check-in results
+    const checkinChannel = supabase
+      .channel('checkin-results')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'daily_checkin_results',
+        },
+        () => {
+          // Refresh patient data when a new check-in result is inserted
+          fetchPatient()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(patientChannel)
+      supabase.removeChannel(checkinChannel)
+    }
+  }, [supabase, fetchPatient])
 
   const treeLevel = patient?.tree_level || 1
 
@@ -88,8 +155,8 @@ export default function DhammaDailyApp() {
           scores: data.scores,
           treeLevel: data.treeLevel,
         })
-        // Refresh patient data to get new tree level
-        mutatePatient()
+        // Update local patient state with new tree level
+        setPatient(prev => prev ? { ...prev, tree_level: data.treeLevel } : prev)
         setCurrentScreen('results')
       } else {
         console.error('Check-in failed:', data.error)
