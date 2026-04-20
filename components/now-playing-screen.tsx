@@ -11,6 +11,7 @@ interface Track {
   teacher: string
   duration: string
   imageUrl?: string
+  audioUrl?: string
 }
 
 interface NowPlayingScreenProps {
@@ -22,17 +23,8 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  const parseDuration = (duration: string): number => {
-    const match = duration.match(/(\d+)/)
-    if (match) {
-      return parseInt(match[1]) * 60
-    }
-    return 600
-  }
-
-  const totalSeconds = parseDuration(track.duration)
+  const [totalSeconds, setTotalSeconds] = useState(0)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
@@ -41,46 +33,70 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
   }
 
   useEffect(() => {
-    if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setCurrentTime((prev) => {
-          if (prev >= totalSeconds) {
-            setIsPlaying(false)
-            return totalSeconds
-          }
-          return prev + 1
-        })
-      }, 1000)
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current)
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleLoadedMetadata = () => {
+      setTotalSeconds(audio.duration || 0)
     }
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime)
+      if (audio.duration) {
+        setProgress((audio.currentTime / audio.duration) * 100)
       }
     }
-  }, [isPlaying, totalSeconds])
+
+    const handleEnded = () => {
+      setIsPlaying(false)
+    }
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('ended', handleEnded)
+
+    return () => {
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [track.audioUrl])
 
   useEffect(() => {
-    setProgress((currentTime / totalSeconds) * 100)
-  }, [currentTime, totalSeconds])
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (isPlaying) {
+      audio.play().catch((err) => {
+        console.error('Audio play failed:', err)
+        setIsPlaying(false)
+      })
+    } else {
+      audio.pause()
+    }
+  }, [isPlaying])
 
   const togglePlayPause = () => {
-    setIsPlaying(!isPlaying)
+    if (!track.audioUrl) return
+    setIsPlaying((prev) => !prev)
   }
 
   const skipBack = () => {
-    setCurrentTime((prev) => Math.max(0, prev - 15))
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = Math.max(0, audio.currentTime - 15)
   }
 
   const skipForward = () => {
-    setCurrentTime((prev) => Math.min(totalSeconds, prev + 15))
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 15)
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      {/* Header */}
+      {track.audioUrl && <audio ref={audioRef} src={track.audioUrl} preload="metadata" />}
+
       <div className="flex items-center gap-4 bg-rose-400 px-5 py-4">
         <button
           onClick={onClose}
@@ -93,7 +109,6 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
         <div className="w-12" />
       </div>
 
-      {/* Album Art */}
       <div className="flex flex-1 flex-col items-center px-8 pt-8">
         <div className="relative mb-6 aspect-square w-full max-w-[280px] overflow-hidden rounded-3xl bg-gray-200 shadow-2xl">
           <Image
@@ -105,30 +120,28 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
           />
         </div>
 
-        {/* Track Info */}
         <div className="mb-6 text-center">
           <h2 className="mb-1 text-2xl font-bold text-gray-900">{track.nameThai}</h2>
           <p className="text-base text-gray-500">{track.teacher}</p>
         </div>
 
-        {/* Progress Bar */}
         <div className="mb-8 w-full max-w-[280px]">
-          <div className="mb-2 text-left text-sm text-gray-500">
-            {formatTime(currentTime)}
+          <div className="mb-2 flex justify-between text-sm text-gray-500">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(totalSeconds)}</span>
           </div>
           <div className="relative h-2 w-full rounded-full bg-gray-200">
             <div
               className="absolute left-0 top-0 h-full rounded-full bg-rose-400 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
-            <div
-              className="absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-rose-400 shadow-lg"
-              style={{ left: `${progress}%`, transform: `translate(-50%, -50%)` }}
-            />
           </div>
         </div>
 
-        {/* Controls - Large Buttons */}
+        {!track.audioUrl && (
+          <p className="mb-6 text-sm text-red-500">ไม่พบไฟล์เสียงของรายการนี้</p>
+        )}
+
         <div className="flex items-center justify-center gap-8">
           <button
             onClick={skipBack}
@@ -160,7 +173,6 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
         </div>
       </div>
 
-      {/* Bottom Spacing */}
       <div className="h-10" />
     </div>
   )
