@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { HomeScreen } from '@/components/home-screen'
 import { CheckInFlow } from '@/components/checkin-flow'
@@ -69,10 +69,12 @@ export default function DhammaDailyApp() {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const supabase = createClient()
+  // Memoize Supabase client to prevent recreation on every render
+  const supabase = useMemo(() => createClient(), [])
 
   // Fetch patient data
   const fetchPatient = useCallback(async () => {
+    console.log('[v0] Fetching patient data...')
     const { data, error } = await supabase
       .from('patients')
       .select('*')
@@ -80,7 +82,10 @@ export default function DhammaDailyApp() {
       .single()
 
     if (!error && data) {
+      console.log('[v0] Patient data fetched:', data)
       setPatient(data)
+    } else if (error) {
+      console.log('[v0] Patient fetch error:', error)
     }
     setIsLoading(false)
   }, [supabase])
@@ -88,6 +93,8 @@ export default function DhammaDailyApp() {
   // Set up realtime subscription
   useEffect(() => {
     fetchPatient()
+
+    console.log('[v0] Setting up realtime subscriptions...')
 
     // Subscribe to patient changes (tree level updates)
     const patientChannel = supabase
@@ -101,12 +108,15 @@ export default function DhammaDailyApp() {
           filter: `id=eq.${DEMO_PATIENT_ID}`,
         },
         (payload) => {
+          console.log('[v0] Realtime patient update received:', payload)
           if (payload.new) {
             setPatient(payload.new as Patient)
           }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[v0] Patient channel status:', status)
+      })
 
     // Subscribe to new check-in results
     const checkinChannel = supabase
@@ -118,14 +128,18 @@ export default function DhammaDailyApp() {
           schema: 'public',
           table: 'daily_checkin_results',
         },
-        () => {
+        (payload) => {
+          console.log('[v0] Realtime checkin result received:', payload)
           // Refresh patient data when a new check-in result is inserted
           fetchPatient()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[v0] Checkin channel status:', status)
+      })
 
     return () => {
+      console.log('[v0] Cleaning up realtime subscriptions...')
       supabase.removeChannel(patientChannel)
       supabase.removeChannel(checkinChannel)
     }
@@ -138,6 +152,7 @@ export default function DhammaDailyApp() {
   }
 
   const handleCheckInComplete = async (answers: CheckInAnswers) => {
+    console.log('[v0] Check-in complete, submitting answers:', answers)
     setIsSubmitting(true)
     try {
       const response = await fetch('/api/checkin', {
@@ -147,8 +162,10 @@ export default function DhammaDailyApp() {
       })
 
       const data = await response.json()
+      console.log('[v0] Check-in API response:', data)
 
       if (data.success) {
+        console.log('[v0] Check-in successful, navigating to results')
         setCheckInResult({
           alertLevel: data.alertLevel,
           patientMessage: data.patientMessage,
@@ -159,12 +176,12 @@ export default function DhammaDailyApp() {
         setPatient(prev => prev ? { ...prev, tree_level: data.treeLevel } : prev)
         setCurrentScreen('results')
       } else {
-        console.error('Check-in failed:', data.error)
+        console.error('[v0] Check-in failed:', data.error)
         // Still show results even if DB fails
         setCurrentScreen('results')
       }
     } catch (error) {
-      console.error('Check-in error:', error)
+      console.error('[v0] Check-in error:', error)
     } finally {
       setIsSubmitting(false)
     }
