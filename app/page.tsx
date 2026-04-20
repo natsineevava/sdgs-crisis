@@ -25,6 +25,8 @@ interface Track {
   duration: string
   color?: string
   image?: string
+  imageUrl?: string
+  audioUrl?: string
 }
 
 interface CheckInResult {
