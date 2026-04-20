@@ -1,6 +1,6 @@
 'use client'
 
-import { Headphones, Smile } from 'lucide-react'
+import { Headphones, Droplets } from 'lucide-react'
 
 interface HomeScreenProps {
   onNavigate: (screen: 'listen' | 'checkin') => void
@@ -33,18 +33,18 @@ export function HomeScreen({ onNavigate, userName = 'คุณยาย' }: Home
           </div>
         </button>
 
-        {/* Mood Tracking Card - Pink/Coral */}
+        {/* Daily Watering Card - Green */}
         <button
           onClick={() => onNavigate('checkin')}
-          className="group flex items-center gap-6 rounded-3xl bg-rose-400 p-8 text-left shadow-lg transition-all active:scale-[0.98]"
+          className="group flex items-center gap-6 rounded-3xl bg-emerald-500 p-8 text-left shadow-lg transition-all active:scale-[0.98]"
           style={{ minHeight: '180px' }}
         >
           <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-md">
-            <Smile className="h-12 w-12 text-rose-400" />
+            <Droplets className="h-12 w-12 text-emerald-500" />
           </div>
           <div className="flex flex-col justify-center">
-            <span className="text-3xl font-bold leading-tight text-white">บันทึกอารมณ์</span>
-            <span className="text-xl text-white/90">เช็คอินสุขภาพ</span>
+            <span className="text-3xl font-bold leading-tight text-white">รดน้ำประจำวัน</span>
+            <span className="text-xl text-white/90">ดูแลต้นโพธิ์</span>
           </div>
         </button>
       </div>
