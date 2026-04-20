@@ -53,11 +53,13 @@ const initialAnswers: CheckInAnswers = {
 interface CheckInFlowProps {
   onComplete: (answers: CheckInAnswers) => void
   onBack: () => void
+  isSubmitting?: boolean
 }
 
-export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
+export function CheckInFlow({ onComplete, onBack, isSubmitting = false }: CheckInFlowProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [answers, setAnswers] = useState<CheckInAnswers>(initialAnswers)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   const currentQuestion = questions[currentStep]
   const totalSteps = questions.length
@@ -73,6 +75,8 @@ export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
   }
 
   const handleAnswer = (answer: boolean) => {
+    if (isCompleting || isSubmitting) return // Prevent double taps
+    
     const newAnswers = {
       ...answers,
       [currentQuestion.id]: answer,
@@ -82,6 +86,8 @@ export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
+      // Last question - complete the check-in
+      setIsCompleting(true)
       onComplete(newAnswers)
     }
   }
@@ -92,6 +98,17 @@ export function CheckInFlow({ onComplete, onBack }: CheckInFlowProps) {
     } else {
       onBack()
     }
+  }
+
+  // Show loading screen while completing
+  if (isCompleting || isSubmitting) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-5">
+        <div className="mb-8 h-20 w-20 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-500" />
+        <p className="text-2xl font-bold text-gray-900">กำลังบันทึก...</p>
+        <p className="mt-2 text-lg text-gray-500">กรุณารอสักครู่</p>
+      </div>
+    )
   }
 
   return (
