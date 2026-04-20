@@ -11,6 +11,7 @@ interface Track {
   duration: string
   imageUrl?: string
   color?: string
+  audioUrl?: string
 }
 
 interface Episode {
@@ -18,12 +19,43 @@ interface Episode {
   title: string
   artist: string
   imageUrl: string
+  audioUrl: string
+  duration: string
 }
 
 const episodes: Episode[] = [
-  { id: '1', title: 'ตอนที่ 1: เริ่มต้น', artist: 'บทนำ', imageUrl: '/images/dhamma-1.jpg' },
-  { id: '2', title: 'ตอนที่ 2: ฝึกใจ', artist: 'การปฏิบัติ', imageUrl: '/images/dhamma-2.jpg' },
-  { id: '3', title: 'ตอนที่ 3: สงบใจ', artist: 'สมาธิ', imageUrl: '/images/dhamma-3.jpg' },
+  {
+    id: '1',
+    title: 'กายคตาสติ',
+    artist: 'หลวงปู่ปราโมทย์',
+    imageUrl: '/images/dhamma-1.jpg',
+    audioUrl: '/audio/กายคตาสติ - หลวงปู่ปราโมทย์.mp3',
+    duration: '15 นาที',
+  },
+  {
+    id: '2',
+    title: 'บทสวดตอนเช้า',
+    artist: 'บทสวดมนต์',
+    imageUrl: '/images/dhamma-2.jpg',
+    audioUrl: '/audio/บทสวดตอนเช้า.mp3',
+    duration: '10 นาที',
+  },
+  {
+    id: '3',
+    title: 'อานาปานสติ',
+    artist: 'หลวงพ่อชา',
+    imageUrl: '/images/dhamma-3.jpg',
+    audioUrl: '/audio/อานาปานสติ - หลวงพ่อชา.mp3',
+    duration: '18 นาที',
+  },
+  {
+    id: '4',
+    title: 'เจริญเมตตาภาวนา',
+    artist: 'พระไพศาล',
+    imageUrl: '/images/dhamma-4.jpg',
+    audioUrl: '/audio/เจริญมตตาภาวนา - พระไพศาล.mp3',
+    duration: '12 นาที',
+  },
 ]
 
 interface PlaylistScreenProps {
@@ -72,11 +104,20 @@ export function PlaylistScreen({ album, onBack, onPlay }: PlaylistScreenProps) {
           {episodes.map((episode) => (
             <button
               key={episode.id}
-              onClick={() => onPlay({ ...album, id: episode.id, nameThai: episode.title })}
+              onClick={() =>
+                onPlay({
+                  ...album,
+                  id: episode.id,
+                  nameThai: episode.title,
+                  teacher: episode.artist,
+                  duration: episode.duration,
+                  imageUrl: episode.imageUrl,
+                  audioUrl: episode.audioUrl,
+                })
+              }
               className="flex w-full items-center gap-4 rounded-2xl bg-gray-50 p-4 text-left shadow-sm transition-all active:scale-[0.98]"
               style={{ minHeight: '80px' }}
             >
-              {/* Episode Art */}
               <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-gray-200 shadow-sm">
                 <Image
                   src={episode.imageUrl}
@@ -85,12 +126,12 @@ export function PlaylistScreen({ album, onBack, onPlay }: PlaylistScreenProps) {
                   className="object-cover"
                 />
               </div>
-              {/* Episode Info */}
+
               <div className="flex-1 min-w-0">
                 <p className="text-lg font-semibold text-gray-900 truncate">{episode.title}</p>
                 <p className="text-sm text-gray-500">{episode.artist}</p>
               </div>
-              {/* Play Button */}
+
               <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gray-300 bg-white">
                 <Play className="h-5 w-5 text-gray-600" />
               </div>
