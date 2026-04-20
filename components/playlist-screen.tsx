@@ -53,7 +53,7 @@ const episodes: Episode[] = [
     title: 'เจริญเมตตาภาวนา',
     artist: 'พระไพศาล',
     imageUrl: '/images/dhamma-4.jpg',
-    audioUrl: '/audio/เจริญมตตาภาวนา - พระไพศาล.mp3',
+    audioUrl: '/audio/เจริญเมตตาภาวนา - พระไพศาล.mp3',
     duration: '12 นาที',
   },
 ]
