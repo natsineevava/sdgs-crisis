@@ -44,12 +44,19 @@ const growthMessages = [
   { level: 21, message: 'ต้นโพธิ์ทองสมบูรณ์แบบ', subMessage: 'วันที่ 21 - สำเร็จแล้ว!' },
 ]
 
+interface RecommendedPodcast {
+  id: string
+  nameThai: string
+  teacher: string
+  image: string
+}
+
 interface ResultsScreenProps {
   treeLevel: number // 1-21
   alertLevel?: 'good' | 'monitor' | 'attention'
   patientMessage?: string
   onHome: () => void
-  onPodcast?: () => void
+  onPlayPodcast?: (podcast: RecommendedPodcast) => void
 }
 
 export function ResultsScreen({
@@ -57,7 +64,7 @@ export function ResultsScreen({
   alertLevel = 'good',
   patientMessage,
   onHome,
-  onPodcast,
+  onPlayPodcast,
 }: ResultsScreenProps) {
   const todayIndex = new Date().getDate() % quotes.length
   const todayQuote = quotes[todayIndex]
@@ -298,7 +305,7 @@ export function ResultsScreen({
         <div className="mb-4 w-full">
           <p className="mb-2 text-base font-medium text-gray-600">แนะนำสำหรับคุณ</p>
           <button
-            onClick={onPodcast}
+            onClick={() => onPlayPodcast?.(suggestedPodcast)}
             className="flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 p-4 text-left shadow-lg transition-all active:scale-[0.98]"
           >
             <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl shadow-md">

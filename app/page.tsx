@@ -202,6 +202,7 @@ export default function DhammaDailyApp() {
           <CheckInFlow
             onComplete={handleCheckInComplete}
             onBack={handleGoHome}
+            isSubmitting={isSubmitting}
           />
         )}
 
@@ -211,7 +212,18 @@ export default function DhammaDailyApp() {
             alertLevel={checkInResult?.alertLevel || 'good'}
             patientMessage={checkInResult?.patientMessage || 'วันนี้คุณดูแลตัวเองได้ดีมาก'}
             onHome={handleGoHome}
-            onPodcast={() => setCurrentScreen('listen')}
+            onPlayPodcast={(podcast) => {
+              // Go directly to playing the recommended podcast
+              setCurrentTrack({
+                id: podcast.id,
+                nameThai: podcast.nameThai,
+                nameEnglish: podcast.nameThai,
+                teacher: podcast.teacher,
+                duration: '15:00',
+                image: podcast.image,
+              })
+              setCurrentScreen('nowplaying')
+            }}
           />
         )}
 
