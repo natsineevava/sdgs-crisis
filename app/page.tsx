@@ -36,6 +36,7 @@ interface CheckInResult {
     sleep: number
     balance: number
     body: number
+    mental: number
     total: number
     redFlags: number
   }
@@ -52,6 +53,9 @@ interface CheckInAnswers {
   q7: boolean
   q8: boolean
   q9: boolean
+  q10: boolean
+  q11: boolean
+  q12: boolean
 }
 
 interface Patient {

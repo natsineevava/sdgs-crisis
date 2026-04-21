@@ -4,10 +4,10 @@ import { useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
 
 interface Question {
-  id: 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7' | 'q8' | 'q9'
+  id: 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7' | 'q8' | 'q9' | 'q10' | 'q11' | 'q12'
   textThai: string
   emoji: string
-  category: 'sleep' | 'balance' | 'body'
+  category: 'sleep' | 'balance' | 'body' | 'mental'
 }
 
 // Questions from the specification with exact Thai text
@@ -24,6 +24,10 @@ const questions: Question[] = [
   { id: 'q7', textThai: 'รู้สึกมึนหัวหรือเวียนศีรษะเมื่อลุกขึ้นยืนไหม?', emoji: '💫', category: 'body' },
   { id: 'q8', textThai: 'รู้สึกอ่อนเพลียผิดปกติหรือหัวใจเต้นผิดจังหวะวันนี้ไหม?', emoji: '❤️', category: 'body' },
   { id: 'q9', textThai: 'ดื่มน้ำและรับประทานอาหารได้เพียงพอวันนี้ไหม?', emoji: '🍵', category: 'body' },
+  // Category 4: Mental & Emotional Wellbeing (ความสุขทางใจ)
+  { id: 'q10', textThai: 'วันนี้เปิดโทรศัพท์แล้วหวังว่าจะมีข้อความจากใครบ้างไหม?', emoji: '📱', category: 'mental' },
+  { id: 'q11', textThai: 'รู้สึกว่าไม่ได้เจอลูกหลานนานไหม?', emoji: '👨‍👩‍👧', category: 'mental' },
+  { id: 'q12', textThai: 'วันนี้รู้สึกกังวลใจอะไรบ้างไหม?', emoji: '😟', category: 'mental' },
 ]
 
 interface CheckInAnswers {
@@ -36,6 +40,9 @@ interface CheckInAnswers {
   q7: boolean
   q8: boolean
   q9: boolean
+  q10: boolean
+  q11: boolean
+  q12: boolean
 }
 
 const initialAnswers: CheckInAnswers = {
@@ -48,6 +55,9 @@ const initialAnswers: CheckInAnswers = {
   q7: false,
   q8: false,
   q9: false,
+  q10: false,
+  q11: false,
+  q12: false,
 }
 
 interface CheckInFlowProps {
@@ -70,6 +80,7 @@ export function CheckInFlow({ onComplete, onBack, isSubmitting = false }: CheckI
       case 'sleep': return 'การนอนหลับ'
       case 'balance': return 'การทรงตัว'
       case 'body': return 'ร่างกาย'
+      case 'mental': return 'ความสุขทางใจ'
       default: return ''
     }
   }
