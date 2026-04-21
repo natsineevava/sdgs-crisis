@@ -30,12 +30,14 @@ interface Track {
 }
 
 interface CheckInResult {
-  alertLevel: 'good' | 'monitor' | 'attention'
+  alertLevel: 'good' | 'monitor' | 'attention' | 'miss'
+  mentalAlertLevel?: 'good' | 'monitor' | 'miss'
   patientMessage: string
   scores: {
     sleep: number
     balance: number
     body: number
+    mental: number
     total: number
     redFlags: number
   }
@@ -52,6 +54,9 @@ interface CheckInAnswers {
   q7: boolean
   q8: boolean
   q9: boolean
+  q10: boolean
+  q11: boolean
+  q12: boolean
 }
 
 interface Patient {
@@ -182,7 +187,8 @@ export default function DhammaDailyApp() {
 
       if (data.success) {
         setCheckInResult({
-          alertLevel: data.alertLevel,
+          alertLevel: data.mentalAlertLevel === 'miss' ? 'miss' : data.alertLevel,
+          mentalAlertLevel: data.mentalAlertLevel,
           patientMessage: data.patientMessage,
           scores: data.scores,
           treeLevel: data.treeLevel,

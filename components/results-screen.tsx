@@ -53,7 +53,7 @@ interface RecommendedPodcast {
 
 interface ResultsScreenProps {
   treeLevel: number // 1-21
-  alertLevel?: 'good' | 'monitor' | 'attention'
+  alertLevel?: 'good' | 'monitor' | 'attention' | 'miss'
   patientMessage?: string
   onHome: () => void
   onPlayPodcast?: (podcast: RecommendedPodcast) => void
