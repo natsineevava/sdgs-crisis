@@ -292,16 +292,6 @@ export function ResultsScreen({
           </div>
         )}
 
-        {/* Missing Somebody Message - shown when mental alertLevel is 'miss' */}
-        {alertLevel === 'miss' && (
-          <div className="mb-4 w-full rounded-2xl bg-gradient-to-r from-pink-100 to-rose-100 p-4 text-center shadow-sm border-2 border-pink-200">
-            <p className="mb-1 text-lg font-bold text-rose-600">คิดถึงใครบางคน</p>
-            <p className="text-base text-rose-500">
-              {patientMessage || 'ลองโทรหาลูกหลานหรือคนที่รักนะคะ'}
-            </p>
-          </div>
-        )}
-
         {/* Quote of the Day */}
         <div className="mb-4 w-full rounded-2xl bg-gradient-to-r from-amber-50 to-yellow-50 p-4 text-center shadow-sm">
           <p className="mb-1 text-sm font-medium text-amber-600">คำคมประจำวัน</p>
