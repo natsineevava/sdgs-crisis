@@ -113,6 +113,16 @@ export async function POST(request: Request) {
       caregiverMessage = 'มีอาการที่ควรติดตาม กรุณาสังเกตอาการเพิ่มเติม'
     }
 
+    // Mental alert level (separate from physical)
+    // miss = 2-3 concerning answers in mental category
+    let mentalAlertLevel = 'good' // สบายใจดี
+    if (mentalScore >= 2) {
+      mentalAlertLevel = 'miss' // คิดถึงใครบางคน
+      patientMessage = 'คิดถึงใครบางคน ลองโทรหาลูกหลานหรือคนที่รักนะคะ'
+    } else if (mentalScore === 1) {
+      mentalAlertLevel = 'monitor' // ควรใส่ใจ
+    }
+
     // Mental category caregiver message (pattern-based, not just score)
     let mentalCaregiverMessage = ''
     const longingFamily = q10Concerning || q11Concerning
@@ -236,6 +246,7 @@ export async function POST(request: Request) {
       checkinId: checkin.id,
       treeLevel: newLevel,
       alertLevel,
+      mentalAlertLevel,
       patientMessage,
       caregiverMessage,
       mentalCaregiverMessage,

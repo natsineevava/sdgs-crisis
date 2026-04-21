@@ -53,7 +53,7 @@ interface RecommendedPodcast {
 
 interface ResultsScreenProps {
   treeLevel: number // 1-21
-  alertLevel?: 'good' | 'monitor' | 'attention'
+  alertLevel?: 'good' | 'monitor' | 'attention' | 'miss'
   patientMessage?: string
   onHome: () => void
   onPlayPodcast?: (podcast: RecommendedPodcast) => void
@@ -288,6 +288,16 @@ export function ResultsScreen({
             </p>
             <p className="text-base text-white/90">
               21 วันแห่งการดูแลตัวเอง
+            </p>
+          </div>
+        )}
+
+        {/* Missing Somebody Message - shown when mental alertLevel is 'miss' */}
+        {alertLevel === 'miss' && (
+          <div className="mb-4 w-full rounded-2xl bg-gradient-to-r from-pink-100 to-rose-100 p-4 text-center shadow-sm border-2 border-pink-200">
+            <p className="mb-1 text-lg font-bold text-rose-600">คิดถึงใครบางคน</p>
+            <p className="text-base text-rose-500">
+              {patientMessage || 'ลองโทรหาลูกหลานหรือคนที่รักนะคะ'}
             </p>
           </div>
         )}
