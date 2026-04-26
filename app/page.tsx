@@ -250,15 +250,41 @@ export default function DhammaDailyApp() {
             patientMessage={checkInResult?.patientMessage || 'วันนี้คุณดูแลตัวเองได้ดีมาก'}
             onHome={handleGoHome}
             onPlayPodcast={(podcast) => {
-              // Go directly to playing the recommended podcast
+              const podcastMap: Record<string, { audioUrl: string; imageUrl: string; duration: string }> = {
+                '1': {
+                  audioUrl: '/audio/กายคตาสติ - หลวงปู่ปราโมทย์.mp3',
+                  imageUrl: '/images/dhamma-1.jpg',
+                  duration: '15 นาที',
+                },
+                '2': {
+                  audioUrl: '/audio/บทสวดตอนเช้า.mp3',
+                  imageUrl: '/images/dhamma-2.jpg',
+                  duration: '10 นาที',
+                },
+                '3': {
+                  audioUrl: '/audio/อานาปานสติ - หลวงพ่อชา.mp3',
+                  imageUrl: '/images/dhamma-3.jpg',
+                  duration: '18 นาที',
+                },
+                '4': {
+                  audioUrl: '/audio/เจริญเมตตาภาวนา - พระไพศาล.mp3',
+                  imageUrl: '/images/dhamma-4.jpg',
+                  duration: '12 นาที',
+                },
+              }
+            
+              const mapped = podcastMap[podcast.id]
+            
               setCurrentTrack({
                 id: podcast.id,
                 nameThai: podcast.nameThai,
                 nameEnglish: podcast.nameThai,
                 teacher: podcast.teacher,
-                duration: '15:00',
-                image: podcast.image,
+                duration: mapped?.duration || '10 นาที',
+                imageUrl: mapped?.imageUrl || podcast.image,
+                audioUrl: mapped?.audioUrl,
               })
+            
               setCurrentScreen('nowplaying')
             }}
           />
