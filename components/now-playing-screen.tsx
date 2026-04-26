@@ -26,6 +26,13 @@ export function NowPlayingScreen({ track, onClose }: NowPlayingScreenProps) {
   const [totalSeconds, setTotalSeconds] = useState(0)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
+  useEffect(() => {
+    setIsPlaying(false)
+    setProgress(0)
+    setCurrentTime(0)
+    setTotalSeconds(0)
+  }, [track.audioUrl])
+  
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
