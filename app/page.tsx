@@ -8,6 +8,7 @@ import { ResultsScreen } from '@/components/results-screen'
 import { PodcastScreen } from '@/components/podcast-screen'
 import { PlaylistScreen } from '@/components/playlist-screen'
 import { NowPlayingScreen } from '@/components/now-playing-screen'
+import { GameHub } from '@/components/games/game-hub'
 
 type Screen =
   | 'home'
@@ -16,6 +17,7 @@ type Screen =
   | 'listen'
   | 'playlist'
   | 'nowplaying'
+  | 'games'
 
 interface Track {
   id: string
@@ -170,7 +172,7 @@ export default function DhammaDailyApp() {
 
   const treeLevel = patient?.tree_level || 1
 
-  const handleNavigate = (screen: 'listen' | 'checkin') => {
+  const handleNavigate = (screen: 'listen' | 'checkin' | 'games') => {
     setCurrentScreen(screen)
   }
 
@@ -310,6 +312,17 @@ export default function DhammaDailyApp() {
           <NowPlayingScreen
             track={currentTrack}
             onClose={() => setCurrentScreen(selectedAlbum ? 'playlist' : 'listen')}
+          />
+        )}
+
+        {currentScreen === 'games' && (
+          <GameHub
+            onBack={handleGoHome}
+            onComplete={(results) => {
+              // Games completed - could save to database and/or grow tree
+              console.log('Game results:', results)
+              handleGoHome()
+            }}
           />
         )}
       </MobileContainer>

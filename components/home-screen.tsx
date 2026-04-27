@@ -1,9 +1,9 @@
 'use client'
 
-import { Headphones, Droplets } from 'lucide-react'
+import { Headphones, Droplets, Gamepad2 } from 'lucide-react'
 
 interface HomeScreenProps {
-  onNavigate: (screen: 'listen' | 'checkin') => void
+  onNavigate: (screen: 'listen' | 'checkin' | 'games') => void
   userName?: string
 }
 
@@ -45,6 +45,21 @@ export function HomeScreen({ onNavigate, userName = 'คุณยาย' }: Home
           <div className="flex flex-col justify-center">
             <span className="text-3xl font-bold leading-tight text-white">รดน้ำประจำวัน</span>
             <span className="text-xl text-white/90">ดูแลต้นโพธิ์</span>
+          </div>
+        </button>
+
+        {/* Daily Games Card - Purple/Indigo */}
+        <button
+          onClick={() => onNavigate('games')}
+          className="group flex items-center gap-6 rounded-3xl bg-indigo-500 p-8 text-left shadow-lg transition-all active:scale-[0.98]"
+          style={{ minHeight: '180px' }}
+        >
+          <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-md">
+            <Gamepad2 className="h-12 w-12 text-indigo-500" />
+          </div>
+          <div className="flex flex-col justify-center">
+            <span className="text-3xl font-bold leading-tight text-white">เกมส์ประจำวัน</span>
+            <span className="text-xl text-white/90">เช็กสมาธิและสติ</span>
           </div>
         </button>
       </div>
